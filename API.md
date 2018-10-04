@@ -4,18 +4,26 @@ CArray/NetCDF library API document
 1. Loading library
 ------------------
 
-    require "netcdflib"
-    include NC
+    gem install carray-netcdf
+
+    require "carray-netcdf"
 
 2. Methods 
 ----------
 
-### 2.0. Data types
+This API provides the way of calling functions
+
+    include NC
+    nc_funcname(...)
+
+    NC.funcname(...)
+
+### 2.1. Data types
 
     data_type = NC.ca_type(xtype)
     xtype     = NC.nc_type(data_type)
 
-### 2.1. NetCDF File
+### 2.2. NetCDF File
 
     fd = nc_create(FILENAME[, mode=NC_CLOBBER])
        
@@ -46,7 +54,7 @@ CArray/NetCDF library API document
        mode : NC_FILL
               NC_NOFILL
 
-### 2.2. NetCDF Dimension
+### 2.3. NetCDF Dimension
 
     dimid    = nc_def_dim(fd, dimname, len)
     dimid    = nc_inq_dimid(fd, dimname)    => Integer | nil
@@ -56,7 +64,7 @@ CArray/NetCDF library API document
 
     nc_rename_dim(fd, dimid, newname)
 
-### 2.3. NetCDF Variable
+### 2.4. NetCDF Variable
 
     varid    = nc_def_var(fd, varname, type, dim)
     varid    = nc_inq_varid(fd, varname)    => Integer | nil
@@ -90,7 +98,7 @@ CArray/NetCDF library API document
 
     nc_rename_var(fd, varid, newname)
 
-### 2.4. NetCDF Attribute
+### 2.5. NetCDF Attribute
 
     varnatts = nc_inq_varnatts(fd, varid)
     attid    = nc_inq_attid(fd, varid, attname)
@@ -119,8 +127,7 @@ CArray/NetCDF library API document
 
     nc_copy_att(fd1, varid1, attname, fd2, varid2)
 
-3. Constants
-------------
+### 2.6 Constants
 
     NC_NAT 
     NC_BYTE
@@ -148,4 +155,116 @@ CArray/NetCDF library API document
 
     NC_LOCK         - ???
     NC_SIZEHINT_DEFAULT - ???
+
+3. NCFile interface
+-------------------
+
+NCFile interface provides the way of *READ-ONLY* access to the netcdf file.
+
+### 3.1. NCFile 
+
+    nc = NCFile.open(FILENAME)
+
+    nc = NCFile.new(file_id)
+           file_id: return value of nc_open in read-only mode
+
+### 3.2. Dimensions 
+
+    nc.has_dim?(DIMNAME)
+    nc.dims               - Array of dimension
+
+    dim = nc.dim(DIMNAME) - NCDim object or nil
+    dim.to_i              - size of dimension
+    dim.to_ca             
+
+### 3.3. Variables
+
+    nc.has_var?(VARNAME)
+    nc.vars               - Array of variables
+
+    var = nc.var(VARNAME) - NCVar object or nil
+    var.is_dim?           - true if dimension variable
+    var.to_ca             - get array as CArray object
+    var[...]              - Cooked value array with CArray-like indexing
+    var.get!(...)         - same as [...]
+    var.get(...)          - Non-cooked value array with CArray-like indexing
+
+    var.get_var1(...)     - interface to original get function 
+    var.get_var()
+    var.get_vara(start, count)
+    var.get_vars(start, count, stride)
+    var.get_varm(start, count, stride, imap)
+    var.get_var1!(...)
+    var.get_var!()
+    var.get_vara!(start, count)
+    var.get_vars!(start, count, stride)
+    var.get_varm!(start, count, stride, imap)
+
+### 3.4. Attributes 
+
+All attributes are already read in initializing process of NCFile object.
+
+    nc.attributes           - Hash
+    dim.attributes          
+    var.attributes          
+
+    nc.attribute(ATTNAME)   - accessor
+    dim.attribute(ATTNAME)
+    var.attribute(ATTNAME)
+
+
+### 3.5. Iteration
+
+No iteration methods is provided, but accessor methods for dims, vars, attributes can be used.
+
+    ex)
+    
+      nc.attributes.each {|key, value| ... }
+      nc.dims.each {|dim| ... }
+      nc.vars.each {|var| ... }
+
+4. NCFileWriter interface
+-------------------------
+
+It provides simple interface to create netcdf file.
+If you want the detailed controling to create netcdf, use nc_function API.
+
+    out = NCFileWrite.new("test.nc")
+
+    out.define(
+      dims: {                            ### dimension
+        lon: 230,                              name: Integer
+        lat: 120,
+        time: 24
+      },
+      vars: {                            ### variables
+        temp: {                                name: definition
+          type: NC::NC_FLOAT,                    type: Integer
+          dims: ["time", "lat", "lon"],          dims: Array of dim names
+          attributes: {                          attributes: Hash
+            long_name: "air temperature",
+            units: "degC"
+          }
+        }
+      },
+      attributes: {                      ### global attributes (Hash)
+        creator: "foobar"
+      }
+    )
+
+    out["lon"]  = lon
+    out["lat"]  = lat
+    out["time"] = time
+    out["temp"][nil] = temp                  ### CArray index can be used
+    out.write                            ### call nc_close 
+
+
+    nc = NCFile.open("test.nc")
+    nc.definition                        ### return definition Hash 
+
+
+
+
+
+
 

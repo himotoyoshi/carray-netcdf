@@ -697,7 +697,7 @@ rb_nc_get_att (int argc, VALUE *argv, VALUE mod)
       volatile VALUE out;
       CArray *ca;
       int8_t  data_type;
-      int32_t dim0 = len;
+      ca_size_t dim0 = len;
 
       data_type = rb_nc_typemap (type);
       out = rb_carray_new(data_type, 1, &dim0, 0, NULL);
@@ -1182,7 +1182,7 @@ rb_nc_get_var (int argc, VALUE *argv, VALUE mod)
     volatile VALUE out;
     CArray *ca;
     int8_t rank, data_type;
-    int32_t dim[CA_RANK_MAX];
+    ca_size_t dim[CA_RANK_MAX];
     size_t len;
     int i;
 
@@ -1299,7 +1299,7 @@ rb_nc_get_vara (int argc, VALUE *argv, VALUE mod)
     volatile VALUE out;
     CArray *ca;
     int8_t rank, data_type;
-    int32_t dim[CA_RANK_MAX];
+    ca_size_t dim[CA_RANK_MAX];
     int i;
 
     data_type = rb_nc_typemap (type);
@@ -1438,7 +1438,7 @@ rb_nc_get_vars (int argc, VALUE *argv, VALUE mod)
     volatile VALUE out;
     CArray *ca;
     int8_t rank, data_type;
-    int32_t dim[CA_RANK_MAX];
+    ca_size_t dim[CA_RANK_MAX];
     int i;
 
     data_type = rb_nc_typemap (type);
@@ -1583,7 +1583,7 @@ rb_nc_get_varm (int argc, VALUE *argv, VALUE mod)
     volatile VALUE out;
     CArray *ca;
     int8_t rank, data_type;
-    int32_t dim[CA_RANK_MAX];
+    ca_size_t dim[CA_RANK_MAX];
     int i;
 
     data_type = rb_nc_typemap (type);
